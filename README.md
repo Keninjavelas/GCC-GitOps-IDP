@@ -75,7 +75,7 @@ flowchart TB
 The screenshot below shows a successfully synchronized and healthy application running on the tested GKE cluster.
 
 <p align="center">
-  <img src="docs/images/argocd-sync-dashboard.png" 
+  <img src="image.png" 
        alt="Argo CD Dashboard showing Synced and Healthy applications"
        width="1000"/>
 </p>
