@@ -4,4 +4,4 @@ resources:
   - deployment.yaml
 images:
   - name: us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app
-    newTag: ef40c2fa1f9e125b20d8a20a9d05728e64e24a25
+    newTag: 7e23cb431671eb61f036730be1972cf164581e8b
