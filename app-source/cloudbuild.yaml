@@ -1,7 +1,7 @@
 steps:
 # 1. Build the Docker Image
 - name: 'gcr.io/cloud-builders/docker'
-  dir: 'app-source' # <--- This fixes the "Dockerfile not found" error
+  dir: 'app-source' 
   args: ['build', '-t', 'us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app:$COMMIT_SHA', '.']
 
 # 2. Push the Docker Image to Artifact Registry
@@ -9,23 +9,36 @@ steps:
   args: ['push', 'us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app:$COMMIT_SHA']
 
 # 3. Update the GitOps Manifest
-- name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: /bin/bash
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
   args:
   - '-c'
   - |
+    set -e # Stops the script immediately if any command fails
+    
+    echo "=== Configuring Git ==="
     git config --global user.email "cloudbuild@gserviceaccount.com"
-    git config --global user.name "Cloud Build"
+    git config --global user.name "Cloud Build Automated IDP"
     
-    # Navigate to the gitops config folder
-    cd gitops-config/base
+    echo "=== Navigating to GitOps Folder ==="
+    # Using /workspace ensures we always start from the root of your repo
+    cd /workspace/gitops-config/base
     
-    # Update the image tag to the new commit hash
+    echo "=== Updating Image Tag ==="
+    # Replaces the old tag with the new commit hash
     sed -i "s|newTag:.*|newTag: $COMMIT_SHA|g" kustomization.yaml
     
     git add kustomization.yaml
-    git commit -m "Automated update: image tag $COMMIT_SHA"
-    git push origin main
+    
+    echo "=== Committing and Pushing ==="
+    # This safely checks if the file actually changed before trying to commit
+    if git diff-index --quiet HEAD --; then
+      echo "No changes detected. Skipping commit."
+    else
+      git commit -m "Automated update: image tag $COMMIT_SHA"
+      echo "Pushing changes back to GitHub branch: $BRANCH_NAME"
+      git push origin HEAD:$BRANCH_NAME
+    fi
 
 # FIX: This resolves the "invalid argument" service account logging error
 options:
