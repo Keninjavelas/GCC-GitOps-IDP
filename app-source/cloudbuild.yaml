@@ -8,30 +8,30 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app:$COMMIT_SHA']
 
-# 3. Update the GitOps Manifest
+# 3. Update the GitOps Manifest using the Secret
 - name: 'gcr.io/cloud-builders/git'
   entrypoint: 'bash'
+  secretEnv: ['GITHUB_TOKEN'] # <--- Tells the step to load the secret
   args:
   - '-c'
   - |
-    set -e # Stops the script immediately if any command fails
+    set -e 
     
     echo "=== Configuring Git ==="
     git config --global user.email "cloudbuild@gserviceaccount.com"
     git config --global user.name "Cloud Build Automated IDP"
     
+    # Inject the secure token into the GitHub URL
+    git remote set-url origin https://Keninjavelas:$$GITHUB_TOKEN@github.com/Keninjavelas/GCC-GitOps-IDP.git
+    
     echo "=== Navigating to GitOps Folder ==="
-    # Using /workspace ensures we always start from the root of your repo
     cd /workspace/gitops-config/base
     
     echo "=== Updating Image Tag ==="
-    # Replaces the old tag with the new commit hash
     sed -i "s|newTag:.*|newTag: $COMMIT_SHA|g" kustomization.yaml
-    
     git add kustomization.yaml
     
     echo "=== Committing and Pushing ==="
-    # This safely checks if the file actually changed before trying to commit
     if git diff-index --quiet HEAD --; then
       echo "No changes detected. Skipping commit."
     else
@@ -40,6 +40,11 @@ steps:
       git push origin HEAD:$BRANCH_NAME
     fi
 
-# FIX: This resolves the "invalid argument" service account logging error
 options:
   logging: CLOUD_LOGGING_ONLY
+
+# This section grabs the secret from Google Cloud and assigns it to GITHUB_TOKEN
+availableSecrets:
+  secretManager:
+  - versionName: projects/influential-sky-488915-u9/secrets/github-token/versions/latest
+    env: 'GITHUB_TOKEN'
