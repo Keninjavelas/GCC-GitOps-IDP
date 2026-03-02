@@ -20,3 +20,7 @@ steps:
     git add kustomization.yaml
     git commit -m "Automated update: image tag $COMMIT_SHA"
     git push origin main
+
+# Add this at the end of the file
+options:
+  logging: CLOUD_LOGGING_ONLY
