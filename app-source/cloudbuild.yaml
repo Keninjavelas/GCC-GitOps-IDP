@@ -1,12 +1,14 @@
 steps:
-# Build & Push using your Project ID
+# 1. Build the Docker Image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/my-project-63678/my-repo/my-app:$COMMIT_SHA', '.']
+  dir: 'app-source' # <--- This fixes the "Dockerfile not found" error
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app:$COMMIT_SHA', '.']
 
+# 2. Push the Docker Image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/my-project-63678/my-repo/my-app:$COMMIT_SHA']
+  args: ['push', 'us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app:$COMMIT_SHA']
 
-# Update the manifest in the same repo
+# 3. Update the GitOps Manifest
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: /bin/bash
   args:
@@ -14,13 +16,17 @@ steps:
   - |
     git config --global user.email "cloudbuild@gserviceaccount.com"
     git config --global user.name "Cloud Build"
-    # Note: We are updating the same repo we are in
+    
+    # Navigate to the gitops config folder
     cd gitops-config/base
+    
+    # Update the image tag to the new commit hash
     sed -i "s|newTag:.*|newTag: $COMMIT_SHA|g" kustomization.yaml
+    
     git add kustomization.yaml
     git commit -m "Automated update: image tag $COMMIT_SHA"
     git push origin main
 
-# Add this at the end of the file
+# FIX: This resolves the "invalid argument" service account logging error
 options:
   logging: CLOUD_LOGGING_ONLY

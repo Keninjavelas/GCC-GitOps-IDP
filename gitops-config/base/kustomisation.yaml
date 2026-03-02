@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - deployment.yaml
 images:
-  - name: us-central1-docker.pkg.dev/my-project-63678/my-repo/my-app
-    newTag: latest # Cloud Build will overwrite this automatically
+  - name: us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app
+    newTag: latest

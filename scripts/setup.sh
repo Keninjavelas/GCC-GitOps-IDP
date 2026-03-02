@@ -1,5 +1,5 @@
-# Add this at the beginning
-gcloud config set project my-project-63678
+# 0. Set the correct project ID based on your logs
+gcloud config set project influential-sky-488915-u9
 
 # 1. Enable APIs
 gcloud services enable container.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com

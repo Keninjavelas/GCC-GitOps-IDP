@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: us-central1-docker.pkg.dev/PROJECT_ID/my-repo/my-app
+        image: us-central1-docker.pkg.dev/influential-sky-488915-u9/my-repo/my-app
         ports:
         - containerPort: 8080
