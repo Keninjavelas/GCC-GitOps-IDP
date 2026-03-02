@@ -1,0 +1,22 @@
+steps:
+# Build & Push using your Project ID
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/my-project-63678/my-repo/my-app:$COMMIT_SHA', '.']
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-central1-docker.pkg.dev/my-project-63678/my-repo/my-app:$COMMIT_SHA']
+
+# Update the manifest in the same repo
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: /bin/bash
+  args:
+  - '-c'
+  - |
+    git config --global user.email "cloudbuild@gserviceaccount.com"
+    git config --global user.name "Cloud Build"
+    # Note: We are updating the same repo we are in
+    cd gitops-config/base
+    sed -i "s|newTag:.*|newTag: $COMMIT_SHA|g" kustomization.yaml
+    git add kustomization.yaml
+    git commit -m "Automated update: image tag $COMMIT_SHA"
+    git push origin main
